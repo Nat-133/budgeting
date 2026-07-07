@@ -146,4 +146,4 @@ def render_error_messages():
     st.info("Please ensure you have the following files in the parent directory:")
     st.markdown("- `budgets/YYYY-MM-DD-budget.csv` files")
     st.markdown("- `income/YYYY-MM-DD-income.csv` files")
-    st.markdown("- `balence_record.csv` file")
+    st.markdown("- `balance_record.csv` file")

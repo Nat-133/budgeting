@@ -53,7 +53,7 @@ def create_test_data_config() -> Tuple[DataConfig, str]:
 
     # Create sample balance file
     balance_data = create_sample_balance_data()
-    balance_data.to_csv(os.path.join(temp_dir, "balence_record.csv"), index=False)
+    balance_data.to_csv(os.path.join(temp_dir, config.balance_file), index=False)
 
     return config, temp_dir
 
