@@ -17,7 +17,8 @@ from backend.calculations.sawtooth_predictor import (
     calculate_spending_for_day,
     is_first_of_month,
     generate_sawtooth_balance_timeline,
-    calculate_balance_at_date
+    calculate_balance_at_date,
+    calculate_sawtooth_deficit
 )
 
 
@@ -488,3 +489,66 @@ class TestEdgeCases:
         feb_days = result[(result['Date'] >= datetime(2024, 2, 1)) &
                           (result['Date'] < datetime(2024, 3, 1))]
         assert len(feb_days) == 29  # 2024 is a leap year
+
+
+class TestCalculateSawtoothDeficit:
+    """Tests for calculate_sawtooth_deficit function."""
+
+    def test_basic_window(self, sample_balance, sample_budget, sample_income):
+        """Deficit over the full Jan 1 -> Mar 1 window (sample_balance is a slight surplus)."""
+        start = datetime(2024, 1, 1)
+        timeline = generate_sawtooth_balance_timeline(
+            sample_balance, sample_budget, sample_income,
+            prediction_start_date=start, prediction_start_balance=10000.0
+        )
+
+        result = calculate_sawtooth_deficit(timeline, sample_balance, start)
+
+        # predictedEndBalance must match the plotted line's final value
+        expected_predicted = float(timeline["Predicted Balance"].iloc[-1])
+        assert result["predictedEndBalance"] == pytest.approx(expected_predicted)
+        # Hand-computed: 10000 -1500 (Jan) +3000 -1500 (Feb) +3000 -1500/31 (Mar 1)
+        assert result["predictedEndBalance"] == pytest.approx(13000 - 1500 / 31, rel=1e-4)
+
+        # Actual balance recorded at the last recording (2024-03-01)
+        assert result["actualEndBalance"] == pytest.approx(13000.0)
+
+        # 2 whole months Jan 1 -> Mar 1
+        assert result["months"] == pytest.approx(2.0)
+
+        # shortfall = predicted - actual (negative here => small surplus)
+        assert result["shortfall"] == pytest.approx(expected_predicted - 13000.0)
+        assert result["shortfall"] < 0
+        assert result["shortfallPerMonth"] == pytest.approx(result["shortfall"] / 2.0)
+
+    def test_overspent_window(self, sample_budget, sample_income):
+        """A low actual end balance yields a positive shortfall (overspent vs plan)."""
+        balance = pd.DataFrame({
+            'Date': pd.to_datetime(['2024-01-01', '2024-03-01']),
+            'Total': [10000.0, 8000.0]  # ended much lower than the plan predicts
+        })
+        start = datetime(2024, 1, 1)
+        timeline = generate_sawtooth_balance_timeline(
+            balance, sample_budget, sample_income,
+            prediction_start_date=start, prediction_start_balance=10000.0
+        )
+
+        result = calculate_sawtooth_deficit(timeline, balance, start)
+
+        assert result["actualEndBalance"] == pytest.approx(8000.0)
+        assert result["shortfall"] > 0  # have less than planned => overspent
+        assert result["shortfall"] == pytest.approx(result["predictedEndBalance"] - 8000.0)
+        assert result["shortfallPerMonth"] == pytest.approx(result["shortfall"] / result["months"])
+
+    def test_zero_length_window(self, sample_balance, sample_budget, sample_income):
+        """Selecting the latest recording as the start gives months=0 and no per-month blow-up."""
+        start = datetime(2024, 3, 1)  # == last recording in sample_balance
+        timeline = generate_sawtooth_balance_timeline(
+            sample_balance, sample_budget, sample_income,
+            prediction_start_date=start, prediction_start_balance=13000.0
+        )
+
+        result = calculate_sawtooth_deficit(timeline, sample_balance, start)
+
+        assert result["months"] == pytest.approx(0.0)
+        assert result["shortfallPerMonth"] == 0.0  # guarded against divide-by-zero

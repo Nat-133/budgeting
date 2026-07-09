@@ -56,8 +56,17 @@ export interface SawtoothTimeline {
   spendingEvents: number[];
 }
 
+export interface SawtoothDeficit {
+  predictedEndBalance: number;
+  actualEndBalance: number;
+  shortfall: number;
+  months: number;
+  shortfallPerMonth: number;
+}
+
 export interface SawtoothPrediction {
   startDate: string;
   startBalance: number;
   timeline: SawtoothTimeline;
+  deficit: SawtoothDeficit;
 }

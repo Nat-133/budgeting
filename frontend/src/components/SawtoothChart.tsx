@@ -21,6 +21,15 @@ const SawtoothChart: React.FC<SawtoothChartProps> = ({
 
   const selectedPrediction = predictions[selectedIndex];
 
+  // Deficit: where the balance should be (budgeted-spend prediction) vs where it actually is,
+  // measured over the selected prediction window. A positive shortfall means you have less than
+  // the plan predicts - i.e. spending beyond budget, such as large unbudgeted expenses.
+  const { deficit } = selectedPrediction;
+  const gbp = (n: number) =>
+    `£${n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const hasWindow = deficit.months > 0;
+  const overspent = deficit.shortfall >= 0;
+
   // Handle click on balance point
   const handlePointClick = (event: any) => {
     if (event.points && event.points.length > 0) {
@@ -41,6 +50,7 @@ const SawtoothChart: React.FC<SawtoothChartProps> = ({
         <strong>Predicting from:</strong> {selectedPrediction.startDate} (£
         {selectedPrediction.startBalance.toFixed(2)})
       </p>
+
       <p style={{ color: '#666', fontSize: '14px' }}>
         Click any blue point to see predictions from that date
       </p>
@@ -111,6 +121,33 @@ const SawtoothChart: React.FC<SawtoothChartProps> = ({
         onClick={handlePointClick}
         useResizeHandler={true}
       />
+
+      <div style={{
+        marginTop: '20px',
+        padding: '14px 16px',
+        backgroundColor: overspent ? '#fef2f2' : '#f0fdf4',
+        borderLeft: `4px solid ${overspent ? '#dc2626' : '#16a34a'}`,
+        borderRadius: '4px',
+      }}>
+        {hasWindow ? (
+          <>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginBottom: '8px' }}>
+              <span><strong>Should have:</strong> {gbp(deficit.predictedEndBalance)}</span>
+              <span><strong>Actually have:</strong> {gbp(deficit.actualEndBalance)}</span>
+            </div>
+            <div style={{ fontSize: '16px', fontWeight: 600, color: overspent ? '#b91c1c' : '#15803d' }}>
+              {overspent ? 'Shortfall vs plan: ' : 'Ahead of plan: '}
+              {gbp(Math.abs(deficit.shortfall))}
+              {' '}over {deficit.months.toFixed(1)} months
+              {' '}({gbp(Math.abs(deficit.shortfallPerMonth))}/mo)
+            </div>
+          </>
+        ) : (
+          <span style={{ color: '#666' }}>
+            Select an earlier point to see the shortfall over that period.
+          </span>
+        )}
+      </div>
 
       <div style={{
         marginTop: '20px',

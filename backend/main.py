@@ -19,7 +19,7 @@ from models import (
 )
 from calculations.loaders import load_all_data, DataConfig
 from calculations.balance_analyzer import calculate_balance_analysis, generate_predicted_balance_timeline
-from calculations.sawtooth_predictor import generate_sawtooth_balance_timeline
+from calculations.sawtooth_predictor import generate_sawtooth_balance_timeline, calculate_sawtooth_deficit
 
 app = FastAPI(title="Budget Dashboard API", version="1.0.0")
 
@@ -274,7 +274,8 @@ async def get_all_sawtooth_predictions():
                     "balances": [float(b) for b in timeline_df["Predicted Balance"]],
                     "incomeEvents": [float(i) for i in timeline_df["Income Event"]],
                     "spendingEvents": [float(s) for s in timeline_df["Spending Event"]]
-                }
+                },
+                "deficit": calculate_sawtooth_deficit(timeline_df, balance, start_date)
             })
 
         return predictions

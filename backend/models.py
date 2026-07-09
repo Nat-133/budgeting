@@ -64,7 +64,16 @@ class SawtoothTimeline(BaseModel):
     spendingEvents: List[float]
 
 
+class SawtoothDeficit(BaseModel):
+    predictedEndBalance: float  # where the balance should be at the latest recording
+    actualEndBalance: float     # where it actually is
+    shortfall: float            # predicted - actual; positive => overspent vs plan
+    months: float               # length of the prediction window
+    shortfallPerMonth: float    # shortfall / months (0 for a zero-length window)
+
+
 class SawtoothPrediction(BaseModel):
     startDate: str
     startBalance: float
     timeline: SawtoothTimeline
+    deficit: SawtoothDeficit

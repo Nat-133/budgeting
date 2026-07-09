@@ -18,7 +18,8 @@ import calendar
 from .models import Budget, Income
 from .calculations import (
     budgeted_spending_between_dates,
-    income_between_dates
+    income_between_dates,
+    fractional_months_between
 )
 
 
@@ -225,3 +226,45 @@ def calculate_balance_at_date(
         current_date += timedelta(days=1)
 
     return current_balance
+
+
+def calculate_sawtooth_deficit(
+    timeline_df: pd.DataFrame,
+    balance: pd.DataFrame,
+    prediction_start_date: datetime
+) -> dict:
+    """Compare where the balance *should* be vs where it actually is.
+
+    The sawtooth timeline predicts the balance assuming only budgeted spending, so the gap
+    between the predicted end balance and the actual recorded balance at the latest recording
+    is essentially spending beyond budget (plus any income variance) - i.e. the unbudgeted
+    expenses.
+
+    Sign convention: shortfall = predicted_end - actual_end.
+    Positive => you have LESS than the plan predicts (overspent / unbudgeted expenses).
+    Negative => surplus (you have more than planned).
+
+    Args:
+        timeline_df: Output of generate_sawtooth_balance_timeline (reused so the predicted
+            figure is consistent with the plotted line).
+        balance: DataFrame with historical balance data (Date, Total).
+        prediction_start_date: The date the selected prediction starts from.
+
+    Returns:
+        Dict with predictedEndBalance, actualEndBalance, shortfall, months, shortfallPerMonth.
+    """
+    predicted_end = float(timeline_df["Predicted Balance"].iloc[-1])
+    last_date = timeline_df["Date"].iloc[-1]
+    actual_end = float(balance.loc[balance["Date"] == last_date, "Total"].values[0])
+
+    shortfall = predicted_end - actual_end
+    months = fractional_months_between(prediction_start_date, last_date)
+    shortfall_per_month = shortfall / months if months > 0 else 0.0
+
+    return {
+        "predictedEndBalance": predicted_end,
+        "actualEndBalance": actual_end,
+        "shortfall": shortfall,
+        "months": months,
+        "shortfallPerMonth": shortfall_per_month,
+    }
