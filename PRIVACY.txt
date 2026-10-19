@@ -1,0 +1,37 @@
+PRIVACY POLICY
+
+Last updated: 19 October 2026
+
+This budgeting dashboard is a personal, self-hosted application. It is run by
+one individual solely to view and analyse their own bank accounts. It is not
+offered as a service to anyone else.
+
+What data is accessed
+  With the account holder's explicit consent, the application reads account
+  information through a regulated Open Banking provider: account details,
+  balances and transactions. It has read-only access and cannot make payments
+  or change anything at the bank.
+
+How data is used
+  The data is used only to display balances, track spending against a budget
+  and forecast future balances for the account holder.
+
+Where data is stored
+  Data is stored locally on the account holder's own machine. It is not
+  uploaded to any third-party server operated by this application.
+
+Sharing
+  Data is never sold, shared with third parties, or used for advertising,
+  profiling or analytics.
+
+Retention
+  Data is kept only for as long as the account holder chooses to keep it and
+  can be deleted at any time.
+
+Withdrawing consent
+  Access can be revoked at any time through the Open Banking provider or
+  directly with the bank. Access also expires automatically when the consent
+  period ends.
+
+Contact
+  Questions can be raised as an issue at https://github.com/Nat-133/budgeting

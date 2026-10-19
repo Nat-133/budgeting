@@ -1,0 +1,33 @@
+TERMS OF USE
+
+Last updated: 19 October 2026
+
+This budgeting dashboard is a personal, self-hosted application used by its
+author to view and analyse their own bank accounts. It is not a commercial
+product and is not offered as a service to anyone else.
+
+Use
+  The application accesses account information only with the account
+  holder's explicit consent, given through a regulated Open Banking provider.
+  Access is read-only: the application cannot initiate payments or modify
+  accounts.
+
+No financial advice
+  Figures, budgets and forecasts shown by the application are for personal
+  reference only and are not financial advice.
+
+No warranty
+  The source code is published as-is, without warranty of any kind. Anyone
+  who runs their own copy does so at their own risk and is responsible for
+  their own data and any provider agreements.
+
+Ending access
+  Consent can be withdrawn at any time through the Open Banking provider or
+  the bank, after which the application can no longer access the account.
+
+Changes
+  These terms may be updated; the current version is always the one in this
+  repository.
+
+Contact
+  Questions can be raised as an issue at https://github.com/Nat-133/budgeting
